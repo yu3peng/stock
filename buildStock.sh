@@ -81,4 +81,5 @@ else
     exit 1;
 fi
 
+# phpmyadmin root/mysqldb
 docker run -itd --link mysqldb --name phpmyadmin -e PMA_HOST=mysqldb -p 8080:80 phpmyadmin:apache

@@ -202,6 +202,7 @@ class JobUpdateHandler(webBase.BaseHandler, ABC):
                         _update_tasks[task_key]['message'] = f'正在执行{job_info["name"]}...'
                     
                     # 执行job脚本
+                    print(f"Starting job script({sys.executable}): {script_path}")
                     result = subprocess.run([
                         sys.executable, script_path
                     ], capture_output=True, text=True, cwd=cpath)

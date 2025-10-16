@@ -31,6 +31,7 @@ import instock.web.dataDownloadHandler as dataDownloadHandler
 import instock.web.dataUpdateHandler as dataUpdateHandler
 import instock.web.jobUpdateHandler as jobUpdateHandler
 import instock.web.base as webBase
+import instock.web.configHandler as configHandler
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -71,6 +72,13 @@ class Application(tornado.web.Application):
             (r"/instock/job_list", jobUpdateHandler.JobListHandler),
             # 菜单到job映射
             (r"/instock/menu_to_job", jobUpdateHandler.MenuToJobMappingHandler),
+            # AI综合分析页面
+            (r"/instock/ai_analysis", AIPageHandler),
+            # 代理配置页面
+            (r"/instock/proxy_config", ProxyConfigPageHandler),
+            # 配置管理API
+            (r"/instock/api/get_config", configHandler.GetConfigHandler),
+            (r"/instock/api/save_config", configHandler.SaveConfigHandler),
         ]
         settings = dict(  # 配置
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
@@ -103,6 +111,32 @@ class SearchPageHandler(webBase.BaseHandler, ABC):
         date_now_str = run_date.strftime("%Y-%m-%d")
         
         self.render("stock_search.html",
+                    date_now=date_now_str,
+                    leftMenu=webBase.GetLeftMenu(self.request.uri))
+
+
+# AI综合分析页面handler
+class AIPageHandler(webBase.BaseHandler, ABC):
+    @gen.coroutine
+    def get(self):
+        import instock.lib.trade_time as trd
+        run_date, run_date_nph = trd.get_trade_date_last()
+        date_now_str = run_date.strftime("%Y-%m-%d")
+        
+        self.render("ai_analysis.html",
+                    date_now=date_now_str,
+                    leftMenu=webBase.GetLeftMenu(self.request.uri))
+
+
+# 代理配置页面handler
+class ProxyConfigPageHandler(webBase.BaseHandler, ABC):
+    @gen.coroutine
+    def get(self):
+        import instock.lib.trade_time as trd
+        run_date, run_date_nph = trd.get_trade_date_last()
+        date_now_str = run_date.strftime("%Y-%m-%d")
+        
+        self.render("proxy_config.html",
                     date_now=date_now_str,
                     leftMenu=webBase.GetLeftMenu(self.request.uri))
 

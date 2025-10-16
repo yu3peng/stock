@@ -25,9 +25,9 @@ DB_CONFIG = {
 CLICKHOUSE_CONFIG = {
     'host': os.environ.get('CLICKHOUSE_HOST'),
     'port': os.environ.get('CLICKHOUSE_PORT'),
-    'username': os.environ.get('CLICKHOUSE_USER'),
-    'password': os.environ.get('CLICKHOUSE_PASSWORD'),
-    'database': os.environ.get('CLICKHOUSE_DATABASE')
+    'username': os.environ.get('CLICKHOUSE_USER','root'),
+    'password': os.environ.get('CLICKHOUSE_PASSWORD','LZHlzh.rootOOT12'),
+    'database': os.environ.get('CLICKHOUSE_DATABASE','instock')
 }
 
 current_dir = os.path.dirname(os.path.abspath(__file__))

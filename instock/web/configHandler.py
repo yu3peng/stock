@@ -1,9 +1,14 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
 
+from instock.lib.simple_logger import get_logger
+
+# 获取logger
+logger = get_logger(__name__)
+
 import json
 import os
-import logging
+
 from abc import ABC
 import tornado.web
 
@@ -45,7 +50,7 @@ class ConfigHandler(webBase.BaseHandler, ABC):
             }))
             
         except Exception as e:
-            logging.error(f"获取配置失败: {e}")
+            logger.error(f"获取配置失败: {e}")
             self.write(json.dumps({
                 'success': False,
                 'message': f'获取配置失败: {str(e)}'
@@ -80,7 +85,7 @@ class ConfigHandler(webBase.BaseHandler, ABC):
             }))
             
         except Exception as e:
-            logging.error(f"保存配置失败: {e}")
+            logger.error(f"保存配置失败: {e}")
             self.write(json.dumps({
                 'success': False,
                 'message': f'保存配置失败: {str(e)}'
@@ -180,7 +185,7 @@ class GetConfigHandler(webBase.BaseHandler, ABC):
             }))
             
         except Exception as e:
-            logging.error(f"获取配置失败: {e}")
+            logger.error(f"获取配置失败: {e}")
             self.write(json.dumps({
                 'success': False,
                 'message': f'获取配置失败: {str(e)}'
@@ -297,7 +302,7 @@ class SaveConfigHandler(webBase.BaseHandler, ABC):
             }))
             
         except Exception as e:
-            logging.error(f"保存配置失败: {e}")
+            logger.error(f"保存配置失败: {e}")
             self.write(json.dumps({
                 'success': False,
                 'message': f'保存配置失败: {str(e)}'

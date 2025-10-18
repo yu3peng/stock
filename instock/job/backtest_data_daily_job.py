@@ -2,7 +2,12 @@
 # -*- coding: utf-8 -*-
 
 
-import logging
+
+from instock.lib.simple_logger import get_logger
+
+# 获取logger
+logger = get_logger(__name__)
+
 import concurrent.futures
 import pandas as pd
 import os.path
@@ -71,7 +76,7 @@ def process(table, data_all, date, backtest_column):
         update_db_from_df(data_new, table_name, ('date', 'code'))
 
     except Exception as e:
-        logging.error(f"backtest_data_daily_job.process处理异常：{table}表{e}")
+        logger.error(f"backtest_data_daily_job.process处理异常：{table}表{e}")
 
 def update_db_from_df(data, table_name, where):
     data = data.where(data.notnull(), None)
@@ -109,7 +114,7 @@ def update_db_from_df(data, table_name, where):
             sql = f'{sql[:-2]}{sql_where}'
             execute_sql(sql, db)
     except Exception as e:
-        logging.error(f"database.update_db_from_df处理异常：{sql}{e}")
+        logger.error(f"database.update_db_from_df处理异常：{sql}{e}")
 
 def run_check(stocks, data_all, date, backtest_column, workers=40):
     data = {}
@@ -125,9 +130,9 @@ def run_check(stocks, data_all, date, backtest_column, workers=40):
                     if _data_ is not None:
                         data[stock] = _data_
                 except Exception as e:
-                    logging.error(f"backtest_data_daily_job.run_check处理异常：{stock[1]}代码{e}")
+                    logger.error(f"backtest_data_daily_job.run_check处理异常：{stock[1]}代码{e}")
     except Exception as e:
-        logging.error(f"backtest_data_daily_job.run_check处理异常：{e}")
+        logger.error(f"backtest_data_daily_job.run_check处理异常：{e}")
     if not data:
         return None
     else:

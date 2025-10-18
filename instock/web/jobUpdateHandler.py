@@ -1,7 +1,12 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging
+
+from instock.lib.simple_logger import get_logger
+
+# 获取logger
+logger = get_logger(__name__)
+
 import os.path
 import sys
 import subprocess
@@ -159,7 +164,7 @@ class JobUpdateHandler(webBase.BaseHandler, ABC):
         try:
             data = json.loads(self.request.body)
             job_type = data.get('job_type', '')  # 具体的job类型
-            
+            logger.info(f"Received job update request: {job_type}")
             if not job_type or job_type not in JOB_MAPPING:
                 self.write(json.dumps({
                     'success': False,
@@ -202,7 +207,7 @@ class JobUpdateHandler(webBase.BaseHandler, ABC):
                         _update_tasks[task_key]['message'] = f'正在执行{job_info["name"]}...'
                     
                     # 执行job脚本
-                    print(f"Starting job script({sys.executable}): {script_path}")
+                    logger.info(f"Starting job script({sys.executable}): {script_path}")
                     result = subprocess.run([
                         sys.executable, script_path
                     ], capture_output=True, text=True, cwd=cpath)
@@ -252,6 +257,7 @@ class JobUpdateHandler(webBase.BaseHandler, ABC):
                 'message': f'请求处理失败: {str(e)}',
                 'task_id': None
             }))
+            logger.exception(f"Job update request failed: {str(e)}")
             self.finish()
 
 class JobUpdateStatusHandler(webBase.BaseHandler, ABC):
@@ -259,7 +265,7 @@ class JobUpdateStatusHandler(webBase.BaseHandler, ABC):
         """获取数据更新任务状态"""
         try:
             task_key = self.get_argument('task_id', '')
-            
+            logger.info(f"Received job update status request: {task_key}")
             with _task_lock:
                 if task_key and task_key in _update_tasks:
                     task_info = _update_tasks[task_key]
@@ -273,6 +279,7 @@ class JobUpdateStatusHandler(webBase.BaseHandler, ABC):
                         'job_type': task_info.get('job_type', ''),
                         'job_info': JOB_MAPPING.get(task_info.get('job_type', ''), {})
                     }
+                    logger.info(f"Job status for {task_key}: {result}")
                 else:
                     # 返回所有活跃任务
                     active_tasks = {}
@@ -322,6 +329,7 @@ class JobListHandler(webBase.BaseHandler, ABC):
             }))
             
         except Exception as e:
+            logger.exception(f"Failed to get job list: {str(e)}")
             self.write(json.dumps({
                 'success': False,
                 'message': f'获取job列表失败: {str(e)}'
@@ -352,6 +360,7 @@ class MenuToJobMappingHandler(webBase.BaseHandler, ABC):
             }))
             
         except Exception as e:
+            logger.exception(f"Failed to get menu to job mapping: {str(e)}")
             self.write(json.dumps({
                 'success': False,
                 'message': f'获取映射关系失败: {str(e)}'

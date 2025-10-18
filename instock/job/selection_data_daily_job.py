@@ -2,7 +2,12 @@
 # -*- coding: utf-8 -*-
 
 
-import logging
+
+from instock.lib.simple_logger import get_logger
+
+# 获取logger
+logger = get_logger(__name__)
+
 import pandas as pd
 import os.path
 import sys

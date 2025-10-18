@@ -1,7 +1,12 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging
+
+from instock.lib.simple_logger import get_logger
+
+# 获取logger
+logger = get_logger(__name__)
+
 import os.path
 import sys
 import subprocess
@@ -112,7 +117,7 @@ class DataUpdateHandler(webBase.BaseHandler, ABC):
         except Exception as e:
             with _task_lock:
                 _update_tasks['running'] = False
-            
+            logger.exception(f"Data update request failed: {str(e)}")
             self.write(json.dumps({
                 'success': False,
                 'message': f'请求处理失败: {str(e)}',
@@ -142,6 +147,7 @@ class DataUpdateStatusHandler(webBase.BaseHandler, ABC):
             }))
             
         except Exception as e:
+            logger.exception(f"Failed to get data update status: {str(e)}")
             self.write(json.dumps({
                 'success': False,
                 'message': f'获取状态失败: {str(e)}'
@@ -178,6 +184,7 @@ class DataCheckHandler(webBase.BaseHandler, ABC):
             }))
             
         except Exception as e:
+            logger.exception(f"Data check failed: {str(e)}")
             self.write(json.dumps({
                 'success': False,
                 'message': f'数据检查失败: {str(e)}',

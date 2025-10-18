@@ -1,25 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from instock.lib.simple_logger import get_logger
+
+# 获取logger
+logger = get_logger(__name__)
+
 import os
+import time
 import traceback
 import pandas as pd
 import numpy as np
 from typing import Optional, Dict, Any, List, Union
 from datetime import datetime, date
-import logging
-# 配置日志
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
-# ClickHouse配置
-CLICKHOUSE_CONFIG = {
-    'host': os.environ.get('CLICKHOUSE_HOST', '192.168.1.6'),
-    'port': int(os.environ.get('CLICKHOUSE_PORT', '8123')),
-    'username': os.environ.get('CLICKHOUSE_USER', 'root'),
-    'password': os.environ.get('CLICKHOUSE_PASSWORD', '123456'),
-    'database': os.environ.get('CLICKHOUSE_DB', 'instockdb')
-}
+# ClickHouse配置 - 使用统一配置
+from instock.lib.clickhouse_config import get_clickhouse_config
+CLICKHOUSE_CONFIG = get_clickhouse_config()
 
 class ClickHouseClient:
     """
@@ -39,7 +36,6 @@ class ClickHouseClient:
     
     def _connect(self) -> bool:
         """建立ClickHouse连接"""
-        import time
         max_retries = 3
         retry_delay = 2
         

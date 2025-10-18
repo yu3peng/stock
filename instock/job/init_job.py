@@ -2,7 +2,12 @@
 # -*- coding: utf-8 -*-
 
 
-import logging
+
+from instock.lib.simple_logger import get_logger
+
+# 获取logger
+logger = get_logger(__name__)
+
 import pymysql
 import os.path
 import sys
@@ -25,7 +30,7 @@ def create_new_database():
     elif db_config.db_type == DatabaseType.CLICKHOUSE:
         create_clickhouse_database()
     else:
-        logging.error(f"不支持的数据库类型: {db_config.db_type}")
+        logger.error(f"不支持的数据库类型: {db_config.db_type}")
 
 def create_mysql_database():
     """创建MySQL数据库"""
@@ -38,7 +43,7 @@ def create_mysql_database():
                 db.execute(create_sql)
                 create_mysql_base_table()
             except Exception as e:
-                logging.error(f"init_job.create_mysql_database处理异常：{e}")
+                logger.error(f"init_job.create_mysql_database处理异常：{e}")
 
 # 创建MySQL基础表。
 def create_mysql_base_table():
@@ -59,9 +64,9 @@ def create_clickhouse_database():
         # ClickHouse通常数据库已经存在，主要是创建表
         create_clickhouse_tables(db)
         db.close()
-        logging.info("ClickHouse数据库初始化完成")
+        logger.info("ClickHouse数据库初始化完成")
     except Exception as e:
-        logging.error(f"init_job.create_clickhouse_database处理异常：{e}")
+        logger.error(f"init_job.create_clickhouse_database处理异常：{e}")
 
 def create_clickhouse_tables(db):
     """创建ClickHouse表结构"""
@@ -80,11 +85,11 @@ def create_clickhouse_tables(db):
         try:
             success = db.execute(sql.strip())
             if success:
-                logging.info(f"ClickHouse表 {table_name} 创建成功")
+                logger.info(f"ClickHouse表 {table_name} 创建成功")
             else:
-                logging.error(f"ClickHouse表 {table_name} 创建失败")
+                logger.error(f"ClickHouse表 {table_name} 创建失败")
         except Exception as e:
-            logging.error(f"创建ClickHouse表 {table_name} 异常: {e}")
+            logger.error(f"创建ClickHouse表 {table_name} 异常: {e}")
 
 
 # 创建基础表。
@@ -111,7 +116,7 @@ def check_database():
         else:
             raise Exception(f"不支持的数据库类型: {db_config.db_type}")
     except Exception as e:
-        logging.error(f"数据库检查失败: {e}")
+        logger.error(f"数据库检查失败: {e}")
         raise
 
 def check_mysql_database():
@@ -131,12 +136,12 @@ def check_clickhouse_database():
 
 def main():
     """主函数 - 根据数据库类型进行初始化"""
-    logging.info(f"开始数据库初始化，数据库类型: {db_config.db_type.value}")
+    logger.info(f"开始数据库初始化，数据库类型: {db_config.db_type.value}")
     
     # 检查，如果执行 select 1 失败，说明数据库不存在，然后创建一个新的数据库。
     try:
         check_database()
-        logging.info("数据库连接检查成功")
+        logger.info("数据库连接检查成功")
     except Exception as e:
         logging.exception("执行信息：数据库不存在或连接失败，将创建/初始化数据库。")
         # 检查数据库失败，
@@ -145,14 +150,14 @@ def main():
     # 对于ClickHouse，即使连接成功也要确保表结构存在
     if db_config.db_type == DatabaseType.CLICKHOUSE:
         try:
-            logging.info("确保ClickHouse表结构存在...")
+            logger.info("确保ClickHouse表结构存在...")
             db = get_database()
             create_clickhouse_tables(db)
             db.close()
         except Exception as e:
-            logging.error(f"ClickHouse表结构检查失败: {e}")
+            logger.error(f"ClickHouse表结构检查失败: {e}")
     
-    logging.info("数据库初始化完成")
+    logger.info("数据库初始化完成")
 
 
 # main函数入口

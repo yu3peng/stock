@@ -1,7 +1,7 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging
+
 import os.path
 import sys
 from abc import ABC
@@ -16,13 +16,11 @@ from tornado import gen
 cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
 sys.path.append(cpath)
-log_path = os.path.join(cpath_current, 'log')
-if not os.path.exists(log_path):
-    os.makedirs(log_path)
-logging.basicConfig(format='%(asctime)s %(message)s', filename=os.path.join(log_path, 'stock_web.log'))
-logging.getLogger().setLevel(logging.ERROR)
-import instock.lib.torndb as torndb
-import instock.lib.database as mdb
+
+from instock.lib.simple_logger import get_logger
+
+# 获取logger，指定日志文件
+logger = get_logger(__name__, log_file="stock_web.log", log_dir="log")
 from instock.lib.database_factory import get_database, db_config, DatabaseType
 import instock.lib.version as version
 import instock.web.dataTableHandler as dataTableHandler
@@ -89,8 +87,20 @@ class Application(tornado.web.Application):
             debug=True,
         )
         super(Application, self).__init__(handlers, **settings)
-        # Have one global connection to the blog DB across all handlers
-        self.db = torndb.Connection(**mdb.MYSQL_CONN_TORNDB)
+        # 根据数据库类型初始化连接
+        if db_config.db_type == DatabaseType.MYSQL:
+            try:
+                import instock.lib.torndb as torndb
+                import instock.lib.database as mdb
+                self.db = torndb.Connection(**mdb.MYSQL_CONN_TORNDB)
+                logger.info("MySQL连接初始化成功")
+            except Exception as e:
+                logger.error(f"MySQL连接初始化失败: {e}")
+                self.db = None
+        else:
+            # ClickHouse模式，不需要torndb连接
+            self.db = None
+            logger.info("使用ClickHouse模式，跳过MySQL连接初始化")
 
 
 # 首页handler。
@@ -148,9 +158,7 @@ def main():
     http_server = tornado.httpserver.HTTPServer(Application())
     port = 9988
     http_server.listen(port)
-
-    print(f"服务已启动，web地址 : http://localhost:{port}/")
-    logging.error(f"服务已启动，web地址 : http://localhost:{port}/")
+    logger.info(f"服务已启动，web地址 : http://localhost:{port}/")
 
     tornado.ioloop.IOLoop.current().start()
 

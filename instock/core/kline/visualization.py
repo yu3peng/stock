@@ -2,10 +2,15 @@
 # -*- coding: utf-8 -*-
 
 
+from instock.lib.simple_logger import get_logger
+
+# 获取logger
+logger = get_logger(__name__)
+
 import numpy as np
 import pandas as pd
 import json
-import logging
+
 import os.path
 import datetime
 # 首映 bokeh 画图。

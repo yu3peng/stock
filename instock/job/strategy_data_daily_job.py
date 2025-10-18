@@ -1,7 +1,12 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging
+
+from instock.lib.simple_logger import get_logger
+
+# 获取logger
+logger = get_logger(__name__)
+
 import concurrent.futures
 import pandas as pd
 import os.path
@@ -75,7 +80,7 @@ def run_check(strategy_fun, table_name, stocks, date, workers=40):
                     if future.result():
                         data.append(stock)
                 except Exception as e:
-                    logging.error(f"strategy_data_daily_job.run_check处理异常：{stock[1]}代码{e}策略{table_name}")
+                    logger.error(f"strategy_data_daily_job.run_check处理异常：{stock[1]}代码{e}策略{table_name}")
     except Exception as e:
         logging.exception(f"strategy_data_daily_job.run_check处理异常：{e}策略{table_name}")
     if not data:

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import logging
 import os.path
 import datetime
 import traceback
@@ -23,8 +22,13 @@ import instock.core.crawling.stock_chip_race as scr
 import instock.core.crawling.stock_limitup_reason as slr
 from instock.core.proxy_pool import get_proxy
 from instock.core.tablestructure import TABLE_CN_STOCK_SPOT
+from instock.lib.simple_logger import get_logger
+
 __author__ = 'myh '
 __date__ = '2023/3/10 '
+
+# 获取logger
+logger = get_logger(__name__)
 
 # 设置基础目录，每次加载使用。
 cpath_current = os.path.dirname(os.path.dirname(__file__))
@@ -70,7 +74,7 @@ def fetch_stocks_trade_date():
         data_date = set(data['trade_date'].values.tolist())
         return data_date
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stocks_trade_date处理异常：{e}")
+        logger.error(f"stockfetch.fetch_stocks_trade_date处理异常：{e}")
     return None
 
 
@@ -99,13 +103,13 @@ def fetch_etfs(date, save_to_db=True):
                     date.strftime("%Y-%m-%d") if hasattr(date, 'strftime') else date,
                     save_to_history=False  # ETF可能没有配置历史表映射
                 )
-                logging.info(f"成功保存 {len(data)} 条ETF实时数据到数据库")
+                logger.info(f"成功保存 {len(data)} 条ETF实时数据到数据库")
             except Exception as db_e:
-                logging.error(f"保存ETF数据到数据库失败：{db_e}")
+                logger.error(f"保存ETF数据到数据库失败：{db_e}")
         
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_etfs处理异常：{e}")
+        logger.error(f"stockfetch.fetch_etfs处理异常：{e}")
     return None
 
 
@@ -136,13 +140,13 @@ def fetch_stocks(date, save_to_db=True):
                     save_to_history=True,
                     use_batch=True
                 )
-                logging.info(f"成功保存 {len(data)} 条股票实时数据到数据库")
+                logger.info(f"成功保存 {len(data)} 条股票实时数据到数据库")
             except Exception as db_e:
-                logging.error(f"保存股票数据到数据库失败：{db_e}")
+                logger.error(f"保存股票数据到数据库失败：{db_e}")
         
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stocks处理异常：{e}")
+        logger.error(f"stockfetch.fetch_stocks处理异常：{e}")
     return None
 
 
@@ -171,7 +175,7 @@ def fetch_stocks_fund_flow(index):
         data = data.loc[data['code'].apply(is_a_stock)].loc[data['new_price'].apply(is_open_with_line)]
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stocks_fund_flow处理异常：{e}")
+        logger.error(f"stockfetch.fetch_stocks_fund_flow处理异常：{e}")
     return None
 
 
@@ -185,7 +189,7 @@ def fetch_stocks_sector_fund_flow(index_sector, index_indicator):
         data.columns = list(cn_flow['columns'])
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stocks_sector_fund_flow处理异常：{e}")
+        logger.error(f"stockfetch.fetch_stocks_sector_fund_flow处理异常：{e}")
     return None
 
 
@@ -203,7 +207,7 @@ def fetch_stocks_bonus(date):
         data = data.loc[data['code'].apply(is_a_stock)]
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stocks_bonus处理异常：{e}")
+        logger.error(f"stockfetch.fetch_stocks_bonus处理异常：{e}")
     return None
 
 
@@ -240,7 +244,7 @@ def fetch_stock_top_entity_data(date):
 
         return data_code
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stock_top_entity_data处理异常：{e}")
+        logger.error(f"stockfetch.fetch_stock_top_entity_data处理异常：{e}")
     return None
 
 
@@ -261,7 +265,7 @@ def fetch_stock_top_data(date):
             data.insert(0, 'date', date.strftime("%Y-%m-%d"))
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stock_top_data处理异常：{e}")
+        logger.error(f"stockfetch.fetch_stock_top_data处理异常：{e}")
     return None
 
 
@@ -280,10 +284,10 @@ def fetch_stock_blocktrade_data(date):
         data.drop('index', axis=1, inplace=True)
         return data
     except TypeError:
-        logging.error("处理异常：目前还没有大宗交易数据，请17:00点后再获取！")
+        logger.error("处理异常：目前还没有大宗交易数据，请17:00点后再获取！")
         return None
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stock_blocktrade_data处理异常：{e}")
+        logger.error(f"stockfetch.fetch_stock_blocktrade_data处理异常：{e}")
     return None
 
 # 读取早盘抢筹
@@ -302,7 +306,7 @@ def fetch_stock_chip_race_open(date):
         data.columns = list(tbs.TABLE_CN_STOCK_CHIP_RACE_OPEN['columns'])
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stock_chip_race_open处理异常：{e}")
+        logger.error(f"stockfetch.fetch_stock_chip_race_open处理异常：{e}")
     return None
 
 # 读取尾盘抢筹
@@ -321,7 +325,7 @@ def fetch_stock_chip_race_end(date):
         data.columns = list(tbs.TABLE_CN_STOCK_CHIP_RACE_END['columns'])
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stock_chip_race_end处理异常：{e}")
+        logger.error(f"stockfetch.fetch_stock_chip_race_end处理异常：{e}")
     return None
 
 # 读取涨停原因
@@ -334,7 +338,7 @@ def fetch_stock_limitup_reason(date):
         data.columns = list(tbs.TABLE_CN_STOCK_LIMITUP_REASON['columns'])
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stock_limitup_reason处理异常：{e}")
+        logger.error(f"stockfetch.fetch_stock_limitup_reason处理异常：{e}")
     return None
 
 # 读取股票历史数据
@@ -361,7 +365,7 @@ def fetch_etf_hist(data_base, date_start=None, date_end=None, adjust='qfq'):
             data["volume"] = data['volume'].values.astype('double') * 100  # 成交量单位从手变成股。
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_etf_hist处理异常：{e}")
+        logger.error(f"stockfetch.fetch_etf_hist处理异常：{e}")
     return None
 
 
@@ -423,7 +427,7 @@ def stock_hist_cache(code, date_start, date_end=None, is_cache=True, adjust='', 
         # time.sleep(1)
         return stock
     except Exception as e:
-        logging.error(f"stockfetch.stock_hist_cache处理异常：{code}代码{e}")
+        logger.error(f"stockfetch.stock_hist_cache处理异常：{code}代码{e}")
     return None
 
 def get_stock_hist_from_db(date_start, date_end=None, code=None):
@@ -491,7 +495,7 @@ def get_stock_code_name(date=None):
             data = [(x[0].strftime('%Y-%m-%d'), x[1], x[2]) for x in data.values]
             return data
     except Exception as e:
-        logging.error(f"stockfetch.get_stock_code_name处理异常：{e}")
+        logger.error(f"stockfetch.get_stock_code_name处理异常：{e}")
     return None
 
 
@@ -516,39 +520,39 @@ def fetch_and_save_realtime_data(date=None, include_etf=True):
     
     try:
         # 获取并保存股票数据
-        logging.info("开始获取股票实时数据...")
+        logger.info("开始获取股票实时数据...")
         stock_data = fetch_stocks(date, save_to_db=True)
         if stock_data is not None:
             result['stock_count'] = len(stock_data)
-            logging.info(f"成功获取并保存 {result['stock_count']} 条股票数据")
+            logger.info(f"成功获取并保存 {result['stock_count']} 条股票数据")
         else:
             result['errors'].append("获取股票数据失败")
-            logging.warning("获取股票数据失败")
+            logger.warning("获取股票数据失败")
         
         # 获取并保存ETF数据
         if include_etf:
-            logging.info("开始获取ETF实时数据...")
+            logger.info("开始获取ETF实时数据...")
             etf_data = fetch_etfs(date, save_to_db=True)
             if etf_data is not None:
                 result['etf_count'] = len(etf_data)
-                logging.info(f"成功获取并保存 {result['etf_count']} 条ETF数据")
+                logger.info(f"成功获取并保存 {result['etf_count']} 条ETF数据")
             else:
                 result['errors'].append("获取ETF数据失败")
-                logging.warning("获取ETF数据失败")
+                logger.warning("获取ETF数据失败")
         
         # 判断整体是否成功
         result['success'] = (result['stock_count'] > 0 or result['etf_count'] > 0)
         
         if result['success']:
             total_count = result['stock_count'] + result['etf_count']
-            logging.info(f"实时数据获取和保存完成，共处理 {total_count} 条记录")
+            logger.info(f"实时数据获取和保存完成，共处理 {total_count} 条记录")
         else:
-            logging.error("实时数据获取和保存失败")
+            logger.error("实时数据获取和保存失败")
         
         return result
         
     except Exception as e:
         error_msg = f"批量获取实时数据时发生异常：{e}"
-        logging.error(error_msg)
+        logger.error(error_msg)
         result['errors'].append(error_msg)
         return result

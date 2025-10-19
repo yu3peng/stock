@@ -1,15 +1,7 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
-
-
-from instock.lib.simple_logger import get_logger
-
-# 获取logger
-logger = get_logger(__name__)
-
 import os.path
 import sys
-import subprocess
 import json
 import time
 import threading
@@ -19,19 +11,94 @@ import tornado.web
 # 在项目运行时，临时将项目路径添加到环境变量
 cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
-sys.path.append(cpath)
+if cpath not in sys.path:
+    sys.path.append(cpath)
+job_path = os.path.join(cpath, 'instock', 'job')
+if job_path not in sys.path:
+    sys.path.append(job_path)
 
 import instock.lib.torndb as torndb
 import instock.lib.database as mdb
 from instock.lib.database_factory import get_database, db_config, DatabaseType
 import instock.web.base as webBase
+from instock.job import (
+    basic_data_daily_job,
+    basic_data_other_daily_job,
+    basic_data_after_close_daily_job,
+    indicators_data_daily_job,
+    klinepattern_data_daily_job,
+    strategy_data_daily_job,
+    backtest_data_daily_job,
+    selection_data_daily_job,
+    execute_daily_job,
+)
+from instock.lib.simple_logger import get_logger
 
-__author__ = 'myh '
-__date__ = '2023/3/10 '
+# 获取logger
+logger = get_logger(__name__)
 
 # 全局变量，用于跟踪任务状态和防止频繁点击
 _update_tasks = {}
 _task_lock = threading.Lock()
+
+# Job执行映射
+JOB_EXECUTORS = {
+    'basic_data': {
+        'name': '基础数据更新',
+        'callable': basic_data_daily_job.main,
+        'message': '正在更新基础数据...'
+    },
+    'basic_data_other': {
+        'name': '其他基础数据',
+        'callable': basic_data_other_daily_job.main,
+        'message': '正在更新其他基础数据...'
+    },
+    'basic_data_after_close': {
+        'name': '收盘后数据',
+        'callable': basic_data_after_close_daily_job.main,
+        'message': '正在更新收盘后数据...'
+    },
+    'indicators': {
+        'name': '技术指标计算',
+        'callable': indicators_data_daily_job.main,
+        'message': '正在计算技术指标...'
+    },
+    'indicators_buy': {
+        'name': '买入信号指标',
+        'callable': indicators_data_daily_job.main,
+        'message': '正在筛选买入信号指标...'
+    },
+    'indicators_sell': {
+        'name': '卖出信号指标',
+        'callable': indicators_data_daily_job.main,
+        'message': '正在筛选卖出信号指标...'
+    },
+    'kline_pattern': {
+        'name': 'K线形态识别',
+        'callable': klinepattern_data_daily_job.main,
+        'message': '正在识别K线形态...'
+    },
+    'strategy': {
+        'name': '策略选股',
+        'callable': strategy_data_daily_job.main,
+        'message': '正在执行策略选股...'
+    },
+    'selection': {
+        'name': '综合选股',
+        'callable': selection_data_daily_job.main,
+        'message': '正在执行综合选股...'
+    },
+    'backtest': {
+        'name': '策略回测',
+        'callable': backtest_data_daily_job.main,
+        'message': '正在执行策略回测...'
+    },
+    'complete': {
+        'name': '完整数据更新',
+        'callable': execute_daily_job.main,
+        'message': '正在执行完整数据更新...'
+    }
+}
 
 # Job到菜单的映射关系
 JOB_MAPPING = {
@@ -187,49 +254,57 @@ class JobUpdateHandler(webBase.BaseHandler, ABC):
                     return
                 
                 # 标记任务开始
+                executor = JOB_EXECUTORS.get(job_type)
+                if not executor:
+                    self.write(json.dumps({
+                        'success': False,
+                        'message': f'未找到 {job_type} 对应的执行器',
+                        'task_id': None
+                    }))
+                    self.finish()
+                    return
                 _update_tasks[task_key] = {
                     'running': True,
                     'start_time': time.time(),
                     'job_type': job_type,
                     'progress': 0,
                     'message': '任务开始执行',
-                    'script': JOB_MAPPING[job_type]['script']
+                    'executor': executor['name']
                 }
             
             # 异步执行更新任务
             def run_job():
                 try:
                     job_info = JOB_MAPPING[job_type]
-                    script_path = os.path.join(cpath, 'instock', 'job', job_info['script'])
-                    
-                    # 更新任务状态
-                    with _task_lock:
-                        _update_tasks[task_key]['message'] = f'正在执行{job_info["name"]}...'
-                    
-                    # 执行job脚本
-                    logger.info(f"Starting job script({sys.executable}): {script_path}")
-                    result = subprocess.run([
-                        sys.executable, script_path
-                    ], capture_output=True, text=True, cwd=cpath)
+                    executor = JOB_EXECUTORS.get(job_type)
+                    if not executor:
+                        raise RuntimeError(f'未找到 {job_type} 对应的执行器')
                     
                     with _task_lock:
-                        if result.returncode == 0:
-                            _update_tasks[task_key]['progress'] = 100
-                            _update_tasks[task_key]['message'] = f'{job_info["name"]}执行完成'
-                            _update_tasks[task_key]['success'] = True
-                        else:
-                            _update_tasks[task_key]['progress'] = 100
-                            _update_tasks[task_key]['message'] = f'{job_info["name"]}执行失败: {result.stderr[-200:]}'
-                            _update_tasks[task_key]['success'] = False
-                        
-                        # 标记任务完成
+                        _update_tasks[task_key]['message'] = executor['message']
+                    
+                    logger.info(f"Starting job callable for {job_type}")
+                    original_cwd = os.getcwd()
+                    os.chdir(cpath)
+                    try:
+                        executor['callable']()
+                    finally:
+                        os.chdir(original_cwd)
+                    logger.info(f"Finished job callable for {job_type}")
+                    
+                    with _task_lock:
+                        _update_tasks[task_key]['progress'] = 100
+                        _update_tasks[task_key]['message'] = f'{job_info["name"]}执行完成'
+                        _update_tasks[task_key]['success'] = True
                         _update_tasks[task_key]['running'] = False
                         _update_tasks[task_key]['end_time'] = time.time()
                         
                 except Exception as e:
+                    logger.exception(f"Job {job_type} execution failed")
                     with _task_lock:
                         _update_tasks[task_key]['progress'] = 100
-                        _update_tasks[task_key]['message'] = f'执行异常: {str(e)}'
+                        executor_name = JOB_EXECUTORS.get(job_type, {}).get('name', job_type)
+                        _update_tasks[task_key]['message'] = f'{executor_name}执行异常: {str(e)}'
                         _update_tasks[task_key]['success'] = False
                         _update_tasks[task_key]['running'] = False
                         _update_tasks[task_key]['end_time'] = time.time()

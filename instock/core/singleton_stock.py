@@ -64,7 +64,7 @@ class stock_hist_data(metaclass=singleton_type):
             #        except Exception as e:
             #            logger.error(f"singleton.stock_hist_data处理异常：{stock[1]}代码{e}")
         except Exception as e:
-            logging.exception(f"singleton.stock_hist_data处理异常：{e}")
+            logger.exception(f"singleton.stock_hist_data处理异常：{e}")
     def batch_fetch_stock_hist_optimized(self, stock_codes, date_start, cached_data, stocks):
         """更高效的批量处理版本"""
         if cached_data is None or cached_data.empty:

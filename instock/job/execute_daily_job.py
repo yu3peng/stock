@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-
-from instock.lib.simple_logger import get_logger
-
-# 获取logger
-logger = get_logger(__name__)
-
 import time
 import datetime
 import concurrent.futures
@@ -21,8 +14,6 @@ sys.path.append(cpath)
 log_path = os.path.join(cpath_current, 'log')
 if not os.path.exists(log_path):
     os.makedirs(log_path)
-logging.basicConfig(format='%(asctime)s %(message)s', filename=os.path.join(log_path, 'stock_execute_job.log'))
-logging.getLogger().setLevel(logging.INFO)
 import init_job as bj
 import basic_data_daily_job as hdj
 import basic_data_other_daily_job as hdtj
@@ -32,10 +23,8 @@ import strategy_data_daily_job as sdj
 import backtest_data_daily_job as bdj
 import klinepattern_data_daily_job as kdj
 import selection_data_daily_job as sddj
-
-__author__ = 'myh '
-__date__ = '2023/3/10 '
-
+from instock.lib.simple_logger import get_logger
+logger = get_logger(__name__)
 
 def main():
     start = time.time()

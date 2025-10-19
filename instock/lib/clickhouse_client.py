@@ -15,8 +15,12 @@ from typing import Optional, Dict, Any, List, Union
 from datetime import datetime, date
 
 # ClickHouse配置 - 使用统一配置
-from instock.lib.clickhouse_config import get_clickhouse_config
-CLICKHOUSE_CONFIG = get_clickhouse_config()
+from instock.lib.database_factory import db_config
+
+
+def _get_default_clickhouse_config() -> Dict[str, Any]:
+    """获取当前生效的ClickHouse配置副本，避免使用过期缓存"""
+    return dict(db_config.clickhouse_config)
 
 class ClickHouseClient:
     """
@@ -30,7 +34,7 @@ class ClickHouseClient:
         Args:
             config: ClickHouse配置字典，如果为None则使用默认配置
         """
-        self.config = config or CLICKHOUSE_CONFIG
+        self.config = config or _get_default_clickhouse_config()
         self.client = None
         self._connect()
     
@@ -464,7 +468,7 @@ def create_clickhouse_client(config: Optional[Dict[str, Any]] = None) -> ClickHo
     Returns:
         ClickHouseClient实例
     """
-    return ClickHouseClient(config)
+    return ClickHouseClient(config or _get_default_clickhouse_config())
 
 
 def quick_query(sql: str, parameters: Optional[Dict] = None, config: Optional[Dict[str, Any]] = None) -> Optional[pd.DataFrame]:

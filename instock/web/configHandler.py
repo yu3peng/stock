@@ -1,10 +1,6 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
 
-from instock.lib.simple_logger import get_logger
-
-# 获取logger
-logger = get_logger(__name__)
 
 import json
 import os
@@ -17,13 +13,9 @@ cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
 import sys
 sys.path.append(cpath)
-
-import instock.lib.torndb as torndb
-import instock.lib.database as mdb
 import instock.web.base as webBase
-
-__author__ = 'myh '
-__date__ = '2023/3/10 '
+from instock.lib.simple_logger import get_logger
+logger = get_logger(__name__)
 
 # 配置文件路径
 CONFIG_FILE = os.path.join(cpath, 'instock', 'config', 'system_config.json')

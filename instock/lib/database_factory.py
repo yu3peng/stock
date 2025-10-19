@@ -41,7 +41,7 @@ class DatabaseConfig:
             'host': os.environ.get('MYSQL_HOST', '192.168.1.6'),
             'port': int(os.environ.get('MYSQL_PORT', '3306')),
             'user': os.environ.get('MYSQL_USER', 'root'),
-            'password': os.environ.get('MYSQL_PASSWORD', 'LZHlzh.rootOOT12#'),
+            'password': os.environ.get('MYSQL_PASSWORD', '123456'),
             'database': os.environ.get('MYSQL_DATABASE', 'instockdb'),
             'charset': os.environ.get('MYSQL_CHARSET', 'utf8mb4')
         }
@@ -555,7 +555,7 @@ class ClickHouseDatabase(DatabaseInterface):
             return df_converted
             
         except Exception as e:
-            logging.exception(f"DataFrame类型转换失败: {e}")
+            logger.exception(f"DataFrame类型转换失败: {e}")
             # 如果转换失败，返回原始DataFrame
             return df
     

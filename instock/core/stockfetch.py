@@ -16,6 +16,8 @@ import instock.core.crawling.stock_lhb_em as sle
 import instock.core.crawling.stock_lhb_sina as sls
 import instock.core.crawling.stock_dzjy_em as sde
 import instock.core.crawling.stock_hist_em as she
+from instock.lib.progress_tracker import update as progress_update
+from instock.lib.progress_tracker import clear as progress_clear
 import instock.core.crawling.stock_fund_em as sff
 import instock.core.crawling.stock_fhps_em as sfe
 import instock.core.crawling.stock_chip_race as scr
@@ -81,6 +83,7 @@ def fetch_stocks_trade_date():
 # 读取当天ETF数据
 def fetch_etfs(date, save_to_db=True):
     try:
+        progress_update('fund_etf', current=0, total=None, message='开始拉取ETF数据')
         data = fee.fund_etf_spot_em(proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
@@ -116,9 +119,12 @@ def fetch_etfs(date, save_to_db=True):
 # 读取当天股票数据
 def fetch_stocks(date, save_to_db=True):
     try:
+        task_key = 'stock_spot'
+        progress_update(task_key, current=0, total=None, message='开始拉取股票数据')
         # 实时获取
         data = she.stock_zh_a_spot_em(proxy=get_proxy())
         if data is None or len(data.index) == 0:
+            progress_update(task_key, current=0, total=0, message='未获取到股票数据', success=False)
             return None
         if date is None:
             date = datetime.datetime.now()
@@ -141,8 +147,10 @@ def fetch_stocks(date, save_to_db=True):
                     use_batch=True
                 )
                 logger.info(f"成功保存 {len(data)} 条股票实时数据到数据库")
+                progress_update('stock_spot', current=len(data), total=len(data), message='股票数据入库完成', success=True)
             except Exception as db_e:
                 logger.error(f"保存股票数据到数据库失败：{db_e}")
+                progress_update('stock_spot', current=len(data) if data is not None else 0, total=len(data) if data is not None else None, message='股票数据入库失败', success=False)
         
         return data
     except Exception as e:
@@ -159,9 +167,7 @@ def fetch_stock_selection():
         data.drop_duplicates('secucode', keep='last', inplace=True)
         return data
     except Exception as e:
-        traceback.print_exc()
-        logging.exception(f"stockfetch.fetch_stocks_selection处理异常：{e}")
-    return None
+        logger.exception(f"stockfetch.fetch_stocks_selection处理异常：{e}")
 
 
 # 读取股票资金流向
@@ -387,8 +393,7 @@ def fetch_stock_hist(data_base, date_start=None, cached_data=None):
         print(f"fetch_stock_hist: 完成股票{code}历史数据获取")
         return data
     except Exception as e:
-        logging.exception(f"stockfetch.fetch_stock_hist处理异常：{e}")
-    return None
+        logger.exception(f"stockfetch.fetch_stock_hist处理异常：{e}")
 
 def convert_date_format(date_string):
     try:

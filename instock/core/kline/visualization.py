@@ -1,12 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
-from instock.lib.simple_logger import get_logger
-
-# 获取logger
-logger = get_logger(__name__)
-
 import numpy as np
 import pandas as pd
 import json
@@ -28,10 +22,8 @@ import instock.core.tablestructure as tbs
 import instock.core.indicator.calculate_indicator as idr
 import instock.core.pattern.pattern_recognitions as kpr
 import instock.core.kline.indicator_web_dic as iwd
-
-__author__ = 'myh '
-__date__ = '2023/4/6 '
-
+from instock.lib.simple_logger import get_logger
+logger = get_logger(__name__)
 
 def get_plot_kline(code, stock, date, stock_name):
     plot_list = []
@@ -237,7 +229,7 @@ def get_plot_kline(code, stock, date, stock_name):
             date_labels = {i: str(date_val) for i, date_val in enumerate(data['date'])}
             p_volume.xaxis.major_label_overrides = date_labels
         except Exception as e:
-            logging.exception(f"visualization.get_plot_kline设置日期标签异常：{code}代码{e}")
+            logger.exception(f"visualization.get_plot_kline设置日期标签异常：{code}代码{e}")
         # p_volume.xaxis.major_label_orientation = pi / 4
 
         # 形态复选框
@@ -342,5 +334,5 @@ def get_plot_kline(code, stock, date, stock_name):
 
         return {"script": script, "div": div}
     except Exception as e:
-        logging.exception(f"visualization.get_plot_kline处理异常：{e}")
+        logger.exception(f"visualization.get_plot_kline处理异常：{e}")
     return None

@@ -1,12 +1,6 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
 
-
-from instock.lib.simple_logger import get_logger
-
-# 获取logger
-logger = get_logger(__name__)
-
 import os.path
 import sys
 
@@ -18,9 +12,8 @@ import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
 from instock.lib.database_factory import get_database, execute_sql, insert_db_from_df
 import instock.core.stockfetch as stf
-
-__author__ = 'myh '
-__date__ = '2023/3/10 '
+from instock.lib.simple_logger import get_logger
+logger = get_logger(__name__)
 
 
 # 每日股票大宗交易

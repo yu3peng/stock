@@ -1,13 +1,5 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
-
-
-
-from instock.lib.simple_logger import get_logger
-
-# 获取logger
-logger = get_logger(__name__)
-
 import pymysql
 import os.path
 import sys
@@ -17,9 +9,8 @@ cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
 sys.path.append(cpath)
 import instock.lib.database as mdb
 from instock.lib.database_factory import get_database, db_config, DatabaseType
-
-__author__ = 'myh '
-__date__ = '2023/3/10 '
+from instock.lib.simple_logger import get_logger
+logger = get_logger(__name__)
 
 
 # 创建新数据库。
@@ -143,7 +134,7 @@ def main():
         check_database()
         logger.info("数据库连接检查成功")
     except Exception as e:
-        logging.exception("执行信息：数据库不存在或连接失败，将创建/初始化数据库。")
+        logger.exception("执行信息：数据库不存在或连接失败，将创建/初始化数据库。")
         # 检查数据库失败，
         create_new_database()
     

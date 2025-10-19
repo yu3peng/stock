@@ -3,10 +3,7 @@
 
 
 
-from instock.lib.simple_logger import get_logger
 
-# 获取logger
-logger = get_logger(__name__)
 
 import concurrent.futures
 import pandas as pd
@@ -23,6 +20,9 @@ from instock.lib.database_factory import get_database, execute_sql, insert_db_fr
 from instock.core.singleton_stock import stock_hist_data
 import instock.core.pattern.pattern_recognitions as kpr
 from instock.lib.common_check import check_and_delete_old_data_for_realtime_data
+from instock.lib.simple_logger import get_logger
+# 获取logger
+logger = get_logger(__name__)
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 

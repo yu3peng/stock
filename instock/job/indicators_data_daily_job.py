@@ -3,10 +3,7 @@
 
 
 
-from instock.lib.simple_logger import get_logger
 
-# 获取logger
-logger = get_logger(__name__)
 
 import concurrent.futures
 import pandas as pd
@@ -19,13 +16,11 @@ sys.path.append(cpath)
 import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
-from instock.lib.database_factory import get_database, execute_sql, insert_db_from_df, read_sql_to_df
+from instock.lib.database_factory import execute_sql, insert_db_from_df, read_sql_to_df
 import instock.core.indicator.calculate_indicator as idr
 from instock.core.singleton_stock import stock_hist_data
-
-__author__ = 'myh '
-__date__ = '2023/3/10 '
-
+from instock.lib.simple_logger import get_logger
+logger = get_logger(__name__)
 
 def prepare(date):
     try:

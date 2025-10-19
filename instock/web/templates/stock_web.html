@@ -1693,13 +1693,23 @@
         const tableName = nameParam.toLowerCase();
         
         if (tableName.includes('selection')) {
-            return 'full'; // 综合选股需要完整更新
+            return 'selection'; // 综合选股
         } else if (tableName.includes('indicators')) {
             return 'indicators'; // 技术指标
-        } else if (tableName.includes('strategy') || tableName.includes('pattern')) {
-            return 'full'; // 策略和形态需要完整数据
+        } else if (tableName.includes('kline')) {
+            return 'kline'; // K线形态
+        } else if (tableName.includes('strategy')) {
+            return 'strategy'; // 策略数据
+        } else if (tableName.includes('backtest')) {
+            return 'backtest'; // 回测任务
+        } else if (tableName.includes('after')) {
+            return 'after_close'; // 收盘后数据
+        } else if (tableName.includes('other')) {
+            return 'basic_other'; // 其他基础数据
+        } else if (tableName.includes('basic_data')) {
+            return 'basic'; // 基础数据
         } else {
-            return 'basic'; // 默认基础数据
+            return 'full'; // 默认执行完整更新
         }
     }
     
@@ -1722,9 +1732,22 @@
                     const updateStatus = document.getElementById('updateStatus');
                     
                     if (status.running) {
+                        const details = status.progress_details || {};
+                        let detailHtml = '';
+                        Object.keys(details).forEach(key => {
+                            const item = details[key];
+                            if (!item) return;
+                            const progress = item.progress ?? (item.total ? (item.current / item.total * 100).toFixed(2) : null);
+                            detailHtml += `
+                                <div>
+                                    <span>${key}：</span>
+                                    <span>${progress !== null ? progress + '%' : 'N/A'} - ${item.message || ''}</span>
+                                </div>`;
+                        });
                         updateStatus.innerHTML = `
                             <i class="fa fa-spinner fa-spin"></i> 
                             更新中... ${status.progress}% - ${status.message}
+                            ${detailHtml ? `<div class="progress-details">${detailHtml}</div>` : ''}
                         `;
                     } else {
                         // 任务完成

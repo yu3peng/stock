@@ -16,7 +16,7 @@ services:
     container_name: InStockphpmyadmin
     environment:
       PMA_USER: root
-      PMA_PASSWORD: 123456   
+      PMA_PASSWORD: root   
       PMA_HOST: InStockDbService
     ports:
       - "8080:80"

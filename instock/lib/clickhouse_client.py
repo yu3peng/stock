@@ -513,7 +513,7 @@ if __name__ == "__main__":
     
     # 基本连接测试 - 使用环境变量配置
     config = {
-        'host': os.environ.get('CLICKHOUSE_HOST', '192.168.1.6'),
+        'host': os.environ.get('CLICKHOUSE_HOST', 'clickhouse'),
         'port': int(os.environ.get('CLICKHOUSE_PORT', '8123')),
         'username': os.environ.get('CLICKHOUSE_USER', 'root'),
         'password': os.environ.get('CLICKHOUSE_PASSWORD', '123456'),

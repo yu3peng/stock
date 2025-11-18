@@ -17,7 +17,7 @@ class ClickHouseConfig:
     
     # 默认配置
     DEFAULT_CONFIG = {
-        'host': '192.168.1.6',
+        'host': 'clickhouse',
         'port': 8123,          # HTTP端口
         'tcp_port': 9000,      # TCP端口
         'username': 'root',

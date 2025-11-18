@@ -78,7 +78,7 @@ agg_data/
 
 ```python
 CLICKHOUSE_CONFIG = {
-    'host': '192.168.1.6',      # ClickHouse 服务器地址
+    'host': 'clickhouse',      # ClickHouse 服务器地址
     'port': 8123,               # HTTP 端口
     'username': 'root',         # 用户名
     'password': 'your_password', # 密码  

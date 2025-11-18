@@ -7,7 +7,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
     volumes:
-      - /data/mariadb/data:/var/lib/instockdb
+      - /data/mariadb/data:/var/lib/mysql
     networks:
       - instock_network
 

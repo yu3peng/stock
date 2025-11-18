@@ -11,6 +11,18 @@ services:
     networks:
       - instock_network
 
+  instockphpmyadmin:
+    image: phpmyadmin:latest
+    container_name: InStockphpmyadmin
+    environment:
+      PMA_USER: root
+      PMA_PASSWORD: 123456   
+      PMA_HOST: InStockDbService
+    ports:
+      - "8080:80"
+    networks:
+      - instock_network
+      
   clickhouse:
     image: clickhouse/clickhouse-server:latest
     container_name: InStockClickHouse

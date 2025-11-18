@@ -38,7 +38,7 @@ class DatabaseConfig:
         
         # MySQL配置
         self.mysql_config = {
-            'host': os.environ.get('MYSQL_HOST', '192.168.1.6'),
+            'host': os.environ.get('MYSQL_HOST', 'clickhouse'),
             'port': int(os.environ.get('MYSQL_PORT', '3306')),
             'user': os.environ.get('MYSQL_USER', 'root'),
             'password': os.environ.get('MYSQL_PASSWORD', '123456'),
